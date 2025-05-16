@@ -57,23 +57,38 @@ export function ChatInterface() {
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setIsTyping(true)
+    try {
+  const response = await fetch("https://hook.eu2.make.com/vhn8mddint8juqmv5vyo2dqc5lb9wxbf", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message: content }),
+  });
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = getBotResponse(content)
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: botResponse,
-        sender: "bot",
-        timestamp: new Date(),
-      }
+  const data = await response.json();
 
-      setMessages((prev) => [...prev, botMessage])
-      setIsTyping(false)
-    }, 1000)
+  const botMessage: Message = {
+    id: (Date.now() + 1).toString(),
+    content: data.reply || "Sorry, I didn't understand that.",
+    sender: "bot",
+    timestamp: new Date(),
+  };
+
+  setMessages((prev) => [...prev, botMessage]);
+} catch (error) {
+  const botMessage: Message = {
+    id: (Date.now() + 1).toString(),
+    content: "⚠️ There was an error talking to the bot. Please try again later.",
+    sender: "bot",
+    timestamp: new Date(),
+  };
+
+  setMessages((prev) => [...prev, botMessage]);
+} finally {
+  setIsTyping(false);
+}
+
   }
 
   const getBotResponse = (message: string) => {
